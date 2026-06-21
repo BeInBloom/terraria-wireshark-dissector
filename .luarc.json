@@ -1,0 +1,16 @@
+{
+  "workspace": {
+    "library": [
+      "./types"
+    ]
+  },
+  "diagnostics": {
+    "globals": [
+      "Proto",
+      "ProtoField",
+      "DissectorTable",
+      "dissect_tcp_pdus",
+      "base"
+    ]
+  }
+}
