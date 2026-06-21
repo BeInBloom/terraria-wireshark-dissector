@@ -1,12 +1,15 @@
-local packet = require("terraria.packet")
+local Dissector = require("terraria.dissector")
 local fields = require("terraria.fields")
 
 local terraria = Proto("terraria", "Terraria Protocol")
 
 terraria.fields = fields.list
+terraria.experts = fields.experts
 
-function terraria.dissector(tvb, _, tree)
-	packet.dissect_tcp_stream(terraria, fields, tvb, tree)
+local dissector = Dissector.new(terraria, fields)
+
+function terraria.dissector(tvb, pinfi, tree)
+	dissector:dissect(tvb, pinfi, tree)
 end
 
 local tcp_port = assert(DissectorTable.get("tcp.port"), "tcp.port dissector table not found")
