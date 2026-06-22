@@ -1,4 +1,5 @@
 ---@class PacketDef
+---@field id integer
 ---@field name string
 ---@field valid boolean
 
