@@ -9,6 +9,16 @@ local M = {}
 ---@field g integer
 ---@field b integer
 
+---@class TerrariaNetworkText
+---@field mode integer
+---@field text string
+---@field substitutions TerrariaNetworkText[]
+---@field mode_range TvbRange
+---@field text_range TvbRange
+---@field substitution_count integer
+---@field substitution_count_range? TvbRange
+---@field substitution_ranges TvbRange[]
+
 ---@class PayloadReader
 ---@field ctx PacketContext
 ---@field cursor integer
@@ -138,7 +148,9 @@ end
 
 ---@param start integer
 ---@return TvbRange
-function PayloadReader:range_from_start(start)
+function PayloadReader:range_from(start)
+	assert(start >= 0, "payload range start must be non-negative")
+	assert(start <= self.cursor, "payload range start is after cursor")
 	return self.ctx:payload_subrange(start, self.cursor - start)
 end
 
@@ -150,12 +162,10 @@ function PayloadReader:vector2()
 	local x = self:single_le()
 	local y = self:single_le()
 
-	local range = self:range_from_start(start)
-
 	return {
 		x = x,
 		y = y,
-	}, range
+	}, self:range_from(start)
 end
 
 ---@return TerrariaColor
@@ -167,13 +177,47 @@ function PayloadReader:color()
 	local g = self:uint8()
 	local b = self:uint8()
 
-	local range = self:range_from_start(start)
-
 	return {
 		r = r,
 		g = g,
 		b = b,
-	}, range
+	}, self:range_from(start)
+end
+
+---@return TerrariaNetworkText
+---@return TvbRange
+function PayloadReader:network_text()
+	local start = self.cursor
+
+	local mode, mode_range = self:uint8()
+	local text, text_range = self:string()
+
+	local substitutions = {}
+	local substitution_ranges = {}
+	local substitution_count = 0
+	local substitution_count_range = nil
+
+	if mode ~= 0 then
+		substitution_count, substitution_count_range = self:uint8()
+
+		for i = 1, substitution_count do
+			-- WARNING: Malformed payloads with deeply nested NetworkText may overflow the Lua stack.
+			local substitution, substitution_range = self:network_text()
+			substitutions[i] = substitution
+			substitution_ranges[i] = substitution_range
+		end
+	end
+
+	return {
+		mode = mode,
+		text = text,
+		substitutions = substitutions,
+		mode_range = mode_range,
+		text_range = text_range,
+		substitution_count = substitution_count,
+		substitution_count_range = substitution_count_range,
+		substitution_ranges = substitution_ranges,
+	}, self:range_from(start)
 end
 
 return M
