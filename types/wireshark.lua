@@ -187,6 +187,9 @@ encoding = {
 	ENC_DECT_STANDARD_4BITS_TBCD = 0,
 }
 
+---@type integer
+ENC_UTF_8 = 0
+
 ---@enum WtapEncapsEnum
 wtap_encaps = {
 	["3MB_ETHERNET"] = 184,

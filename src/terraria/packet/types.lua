@@ -1,0 +1,179 @@
+---@class PacketDef
+---@field id integer
+---@field name string
+---@field valid boolean
+
+---@class TerrariaVector2
+---@field x number
+---@field y number
+
+---@class TerrariaRangedVector2: TerrariaVector2
+---@field x_range TvbRange
+---@field y_range TvbRange
+
+---@class TerrariaColor
+---@field r integer
+---@field g integer
+---@field b integer
+
+---@class TerrariaNetworkText
+---@field mode integer
+---@field text string
+---@field substitutions TerrariaNetworkText[]
+---@field mode_range TvbRange
+---@field text_range TvbRange
+---@field substitution_count integer
+---@field substitution_count_range? TvbRange
+---@field substitution_ranges TvbRange[]
+
+---@class TerrariaChest
+---@field id integer
+---@field x integer
+---@field y integer
+---@field name string
+---@field id_range TvbRange
+---@field x_range TvbRange
+---@field y_range TvbRange
+---@field name_range TvbRange
+
+---@class TerrariaSign
+---@field id integer
+---@field x integer
+---@field y integer
+---@field text string
+---@field id_range TvbRange
+---@field x_range TvbRange
+---@field y_range TvbRange
+---@field text_range TvbRange
+
+---@class TerrariaItemData
+---@field type integer
+---@field prefix integer
+---@field stack integer
+---@field type_range TvbRange
+---@field prefix_range TvbRange
+---@field stack_range TvbRange
+
+---@class TerrariaParticleOrchestra
+---@field position TerrariaVector2
+---@field movement TerrariaVector2
+---@field packed_shader_index integer
+---@field invoking_player_id integer
+---@field position_range TvbRange
+---@field movement_range TvbRange
+---@field packed_shader_index_range TvbRange
+---@field invoking_player_id_range TvbRange
+
+---@class TerrariaPlayerDeathReason
+---@field flags integer
+---@field killer_player_id? integer
+---@field killer_npc_index? integer
+---@field projectile_index? integer
+---@field other_death_type? integer
+---@field projectile_type? integer
+---@field item_type? integer
+---@field item_prefix? integer
+---@field custom_reason? string
+---@field flags_range TvbRange
+---@field killer_player_id_range? TvbRange
+---@field killer_npc_index_range? TvbRange
+---@field projectile_index_range? TvbRange
+---@field other_death_type_range? TvbRange
+---@field projectile_type_range? TvbRange
+---@field item_type_range? TvbRange
+---@field item_prefix_range? TvbRange
+---@field custom_reason_range? TvbRange
+
+---@class TerrariaTile
+---@field flags1 integer
+---@field flags2 integer
+---@field active boolean
+---@field lighted boolean
+---@field has_wall boolean
+---@field has_liquid boolean
+---@field wire1 boolean
+---@field wire2 boolean
+---@field wire3 boolean
+---@field wire4 boolean
+---@field half_brick boolean
+---@field actuator boolean
+---@field inactive boolean
+---@field slope integer
+---@field color? integer
+---@field wall_color? integer
+---@field type? integer
+---@field frame_x? integer
+---@field frame_y? integer
+---@field wall? integer
+---@field liquid? integer
+---@field liquid_type? integer
+---@field flags1_range TvbRange
+---@field flags2_range TvbRange
+---@field color_range? TvbRange
+---@field wall_color_range? TvbRange
+---@field type_range? TvbRange
+---@field frame_x_range? TvbRange
+---@field frame_y_range? TvbRange
+---@field wall_range? TvbRange
+---@field liquid_range? TvbRange
+---@field liquid_type_range? TvbRange
+
+---@class TerrariaTrainingDummyData
+---@field npc_index integer
+---@field npc_index_range TvbRange
+
+---@class TerrariaLogicSensorData
+---@field logic_check_type integer
+---@field on boolean
+---@field logic_check_type_range TvbRange
+---@field on_range TvbRange
+
+---@class TerrariaDisplayDollData
+---@field item_flags integer
+---@field dye_flags integer
+---@field items TerrariaItemData[]
+---@field dyes TerrariaItemData[]
+---@field item_ranges TvbRange[]
+---@field dye_ranges TvbRange[]
+---@field item_flags_range TvbRange
+---@field dye_flags_range TvbRange
+
+---@class TerrariaHatRackData
+---@field flags integer
+---@field items TerrariaItemData[]
+---@field dyes TerrariaItemData[]
+---@field item_ranges TvbRange[]
+---@field dye_ranges TvbRange[]
+---@field flags_range TvbRange
+
+---@alias TerrariaTileEntityExtraData TerrariaTrainingDummyData|TerrariaLogicSensorData|TerrariaDisplayDollData|TerrariaHatRackData|TerrariaItemData|table
+
+---@class TerrariaTileEntity
+---@field type integer
+---@field id integer
+---@field x integer
+---@field y integer
+---@field extra_data TerrariaTileEntityExtraData
+---@field type_range TvbRange
+---@field id_range TvbRange
+---@field x_range TvbRange
+---@field y_range TvbRange
+---@field extra_data_range TvbRange
+
+---@class TerrariaUpdatePlayer
+---@field player_id integer
+---@field control integer
+---@field pulley integer
+---@field misc integer
+---@field sleeping_info integer
+---@field selected_item integer
+---@field position TerrariaRangedVector2
+---@field velocity? TerrariaRangedVector2
+---@field original_position? TerrariaRangedVector2
+---@field home_position? TerrariaRangedVector2
+---@field player_id_range TvbRange
+---@field control_range TvbRange
+---@field pulley_range TvbRange
+---@field misc_range TvbRange
+---@field sleeping_info_range TvbRange
+---@field selected_item_range TvbRange

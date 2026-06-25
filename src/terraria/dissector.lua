@@ -1,9 +1,8 @@
 local pd = require("terraria.packet.payload_dissector")
 local context = require("terraria.packet.context")
+local packet_catalog = require("terraria.packet.packet_catalog")
 
 local M = {}
-
-local MAX_PACKET_ID = 140
 
 ---@class TerrariaDissector
 ---@field proto Proto
@@ -35,7 +34,7 @@ end
 ---@param ctx PacketContext
 ---@return boolean
 function TerrariaDissector:is_unknown(ctx)
-	return ctx.id > MAX_PACKET_ID
+	return packet_catalog[ctx.id] == nil
 end
 
 ---@param ctx PacketContext
@@ -91,12 +90,20 @@ end
 ---@param tree TreeItem
 ---@return integer
 function TerrariaDissector:dissect_known(ctx, pinfo, tree)
+	local packet = packet_catalog[ctx.id]
+
 	---@diagnostic disable-next-line: inject-field
-	pinfo.cols.info = string.format("Terraria packet id=%d len=%d", ctx.id, ctx.len)
+	pinfo.cols.info = string.format(
+		"Terraria %s id=%d len=%d",
+		packet.name,
+		ctx.id,
+		ctx.len
+	)
 
-	local subtree = self:add_packet_tree(ctx, "Terraria Packet", tree)
+	local subtree = self:add_packet_tree(ctx, "Terraria " .. packet.name, tree)
 
-	if ctx.payload_len > 0 then
+	local has_builder = self.payload_dissector:get_builder(ctx.id) ~= nil
+	if ctx.payload_len > 0 or has_builder then
 		local payload_tree = subtree:add(
 			self.fields.payload,
 			ctx:payload_range(),

@@ -64,23 +64,4 @@ function PacketContext:id_range()
 	return self.tvb(ID_OFFSET, ID_SIZE)
 end
 
----@param offset integer
----@param len integer
----@return TvbRange
-function PacketContext:payload_subrange(offset, len)
-	assert(offset >= 0, "payload offset must be non-negative")
-	assert(len >= 0, "payload range length must be non-negative")
-	assert(
-		offset + len <= self.payload_len,
-		string.format(
-			"payload range out of bounds: offset=%d len=%d payload_len=%d",
-			offset,
-			len,
-			self.payload_len
-		)
-	)
-
-	return self.tvb(PAYLOAD_OFFSET + offset, len)
-end
-
 return PacketContext

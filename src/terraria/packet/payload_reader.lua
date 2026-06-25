@@ -1,223 +1,202 @@
-local M = {}
+local color_reader = require("terraria.packet.readers.color_reader")
+local network_text_reader = require("terraria.packet.readers.network_text_reader")
+local string_reader = require("terraria.packet.readers.string_reader")
+local update_player_reader = require("terraria.packet.readers.update_player_reader")
 
----@class TerrariaVector2
----@field x number
----@field y number
-
----@class TerrariaColor
----@field r integer
----@field g integer
----@field b integer
-
----@class TerrariaNetworkText
----@field mode integer
----@field text string
----@field substitutions TerrariaNetworkText[]
----@field mode_range TvbRange
----@field text_range TvbRange
----@field substitution_count integer
----@field substitution_count_range? TvbRange
----@field substitution_ranges TvbRange[]
+---@class UpdatePlayerFields
+---@field player_id ProtoField
+---@field control ProtoField
+---@field pulley ProtoField
+---@field misc ProtoField
+---@field sleeping_info ProtoField
+---@field selected_item ProtoField
+---@field position_x ProtoField
+---@field position_y ProtoField
+---@field velocity_x ProtoField
+---@field velocity_y ProtoField
+---@field original_position_x ProtoField
+---@field original_position_y ProtoField
+---@field home_position_x ProtoField
+---@field home_position_y ProtoField
 
 ---@class PayloadReader
----@field ctx PacketContext
----@field cursor integer
+---@field reader ByteReader
+---@field tree TreeItem
 local PayloadReader = {}
 PayloadReader.__index = PayloadReader
 
----@param ctx PacketContext
+---@param reader ByteReader
+---@param tree TreeItem
 ---@return PayloadReader
-function M.new(ctx)
+function PayloadReader.new(reader, tree)
 	return setmetatable({
-		ctx = ctx,
-		cursor = 0,
+		reader = reader,
+		tree = tree,
 	}, PayloadReader)
 end
 
----@return integer
-function PayloadReader:remaining()
-	return self.ctx.payload_len - self.cursor
-end
-
----@param len integer
----@return TvbRange
-function PayloadReader:range(len)
-	assert(self:remaining() >= len, "payload reader out of bounds")
-	local range = self.ctx:payload_subrange(self.cursor, len)
-	self.cursor = self.cursor + len
-	return range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:uint8()
-	local range = self:range(1)
-	return range:uint(), range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:uint16_le()
-	local range = self:range(2)
-	return range:le_uint(), range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:int16_le()
-	local range = self:range(2)
-	return range:le_int(), range
-end
-
----@return integer
-function PayloadReader:read_7bit_encoded_int()
-	local res = 0
-	local shift = 0
-
-	for _ = 1, 5 do
-		local byte = self:uint8()
-
-		res = res | ((byte & 0x7F) << shift)
-		if (byte & 0x80) == 0 then
-			return res
-		end
-
-		shift = shift + 7
-	end
-
-	error("invalid 7-bit encoded int")
-end
-
----@return string
----@return TvbRange
-function PayloadReader:string()
-	local len = self:read_7bit_encoded_int()
-	local range = self:range(len)
-	return range:string(encoding.ENC_UTF_8), range
-end
-
----@return boolean
----@return TvbRange
-function PayloadReader:bool()
-	local value, range = self:uint8()
-	return value ~= 0, range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:int32_le()
-	local range = self:range(4)
-	return range:le_int(), range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:uint32_le()
-	local range = self:range(4)
-	return range:le_uint(), range
-end
-
----@return UInt64
----@return TvbRange
-function PayloadReader:uint64_le()
-	local range = self:range(8)
-	return range:le_uint64(), range
-end
-
----@return integer
----@return TvbRange
-function PayloadReader:sbyte()
-	local range = self:range(1)
-	return range:int(), range
-end
-
----@return number
----@return TvbRange
-function PayloadReader:single_le()
-	local range = self:range(4)
-	return range:le_float(), range
-end
-
----@param len integer
----@return string
----@return TvbRange
-function PayloadReader:bytes(len)
-	local range = self:range(len)
-	return range:raw(), range
-end
-
+---@param field ProtoField
 ---@param start integer
----@return TvbRange
-function PayloadReader:range_from(start)
-	assert(start >= 0, "payload range start must be non-negative")
-	assert(start <= self.cursor, "payload range start is after cursor")
-	return self.ctx:payload_subrange(start, self.cursor - start)
+---@param err any
+function PayloadReader:fail(field, start, err)
+	local range = self.reader:range_from(start)
+	local item = self.tree:add(field, range)
+	local message = string.format(
+		"Failed to read payload field at offset %d: %s",
+		start,
+		tostring(err)
+	)
+
+	item:add_expert_info(
+		expert.group.MALFORMED,
+		expert.severity.ERROR,
+		message
+	)
+
+	error(err, 0)
 end
 
----@return TerrariaVector2
----@return TvbRange
-function PayloadReader:vector2()
-	local start = self.cursor
+---@param field ProtoField
+function PayloadReader:string(field)
+	local start = self.reader:position()
+	local strings = string_reader.new(self.reader)
+	local ok, value, range = pcall(strings.read, strings)
 
-	local x = self:single_le()
-	local y = self:single_le()
-
-	return {
-		x = x,
-		y = y,
-	}, self:range_from(start)
-end
-
----@return TerrariaColor
----@return TvbRange
-function PayloadReader:color()
-	local start = self.cursor
-
-	local r = self:uint8()
-	local g = self:uint8()
-	local b = self:uint8()
-
-	return {
-		r = r,
-		g = g,
-		b = b,
-	}, self:range_from(start)
-end
-
----@return TerrariaNetworkText
----@return TvbRange
-function PayloadReader:network_text()
-	local start = self.cursor
-
-	local mode, mode_range = self:uint8()
-	local text, text_range = self:string()
-
-	local substitutions = {}
-	local substitution_ranges = {}
-	local substitution_count = 0
-	local substitution_count_range = nil
-
-	if mode ~= 0 then
-		substitution_count, substitution_count_range = self:uint8()
-
-		for i = 1, substitution_count do
-			-- WARNING: Malformed payloads with deeply nested NetworkText may overflow the Lua stack.
-			local substitution, substitution_range = self:network_text()
-			substitutions[i] = substitution
-			substitution_ranges[i] = substitution_range
-		end
+	if not ok then
+		self:fail(field, start, value)
 	end
 
-	return {
-		mode = mode,
-		text = text,
-		substitutions = substitutions,
-		mode_range = mode_range,
-		text_range = text_range,
-		substitution_count = substitution_count,
-		substitution_count_range = substitution_count_range,
-		substitution_ranges = substitution_ranges,
-	}, self:range_from(start)
+	self.tree:add(field, range, value)
 end
 
-return M
+---@param field ProtoField
+function PayloadReader:network_text(field)
+	local start = self.reader:position()
+	local reader = network_text_reader.new(self.reader)
+	local ok, value, range = pcall(reader.read, reader)
+
+	if not ok then
+		self:fail(field, start, value)
+	end
+
+	self.tree:add(field, range, value.text)
+end
+
+---@param field ProtoField
+function PayloadReader:color(field)
+	local reader = color_reader.new(self.reader)
+	local _, range = reader:read()
+	self.tree:add(field, range)
+end
+
+---@param field ProtoField
+function PayloadReader:bool(field)
+	local value, range = self.reader:bool()
+	self.tree:add(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:uint8(field)
+	local value, range = self.reader:uint8()
+	self.tree:add(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:sbyte(field)
+	local value, range = self.reader:sbyte()
+	self.tree:add(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:uint16_le(field)
+	local value, range = self.reader:uint16_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:int16_le(field)
+	local value, range = self.reader:int16_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:uint32_le(field)
+	local value, range = self.reader:uint32_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:int32_le(field)
+	local value, range = self.reader:int32_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:uint64_le(field)
+	local value, range = self.reader:uint64_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:single_le(field)
+	local value, range = self.reader:single_le()
+	self.tree:add_le(field, range, value)
+end
+
+---@param field ProtoField
+---@param len integer
+function PayloadReader:bytes(field, len)
+	local value, range = self.reader:bytes(len)
+	self.tree:add(field, range, value)
+end
+
+---@param field ProtoField
+function PayloadReader:remaining_bytes(field)
+	self:bytes(field, self.reader:remaining())
+end
+
+---@param fields UpdatePlayerFields
+function PayloadReader:update_player(fields)
+	local reader = update_player_reader.new(self.reader)
+	local value = reader:read()
+
+	self:add_update_player_base(fields, value)
+	self:add_optional_vector(fields.velocity_x, fields.velocity_y, value.velocity)
+	self:add_optional_vector(
+		fields.original_position_x,
+		fields.original_position_y,
+		value.original_position
+	)
+	self:add_optional_vector(
+		fields.home_position_x,
+		fields.home_position_y,
+		value.home_position
+	)
+end
+
+---@param fields UpdatePlayerFields
+---@param value TerrariaUpdatePlayer
+function PayloadReader:add_update_player_base(fields, value)
+	self.tree:add(fields.player_id, value.player_id_range, value.player_id)
+	self.tree:add(fields.control, value.control_range, value.control)
+	self.tree:add(fields.pulley, value.pulley_range, value.pulley)
+	self.tree:add(fields.misc, value.misc_range, value.misc)
+	self.tree:add(fields.sleeping_info, value.sleeping_info_range, value.sleeping_info)
+	self.tree:add(fields.selected_item, value.selected_item_range, value.selected_item)
+	self.tree:add_le(fields.position_x, value.position.x_range, value.position.x)
+	self.tree:add_le(fields.position_y, value.position.y_range, value.position.y)
+end
+
+---@param x_field ProtoField
+---@param y_field ProtoField
+---@param vector TerrariaRangedVector2?
+function PayloadReader:add_optional_vector(x_field, y_field, vector)
+	if not vector then
+		return
+	end
+
+	self.tree:add_le(x_field, vector.x_range, vector.x)
+	self.tree:add_le(y_field, vector.y_range, vector.y)
+end
+
+return PayloadReader

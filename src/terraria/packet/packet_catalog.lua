@@ -1,8 +1,3 @@
----@class PacketDef
----@field id integer
----@field name string
----@field valid boolean
-
 ---@type table<integer, PacketDef>
 local packets = {
 	[1] = { id = 1, name = "Connect Request", valid = true },
