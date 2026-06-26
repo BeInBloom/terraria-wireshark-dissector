@@ -1,23 +1,10 @@
 local color_reader = require("terraria.packet.readers.color_reader")
 local network_text_reader = require("terraria.packet.readers.network_text_reader")
+local npc_update_reader = require("terraria.packet.readers.npc_update_reader")
+local projectile_update_reader = require("terraria.packet.readers.projectile_update_reader")
+local send_tile_square_reader = require("terraria.packet.readers.send_tile_square_reader")
 local string_reader = require("terraria.packet.readers.string_reader")
 local update_player_reader = require("terraria.packet.readers.update_player_reader")
-
----@class UpdatePlayerFields
----@field player_id ProtoField
----@field control ProtoField
----@field pulley ProtoField
----@field misc ProtoField
----@field sleeping_info ProtoField
----@field selected_item ProtoField
----@field position_x ProtoField
----@field position_y ProtoField
----@field velocity_x ProtoField
----@field velocity_y ProtoField
----@field original_position_x ProtoField
----@field original_position_y ProtoField
----@field home_position_x ProtoField
----@field home_position_y ProtoField
 
 ---@class PayloadReader
 ---@field reader ByteReader
@@ -33,6 +20,36 @@ function PayloadReader.new(reader, tree)
 		reader = reader,
 		tree = tree,
 	}, PayloadReader)
+end
+
+---@param field ProtoField
+---@param range TvbRange?
+---@param value any?
+function PayloadReader:add_field(field, range, value)
+	if not range then
+		return
+	end
+
+	if value == nil then
+		self.tree:add(field, range)
+	else
+		self.tree:add(field, range, value)
+	end
+end
+
+---@param field ProtoField
+---@param range TvbRange?
+---@param value any?
+function PayloadReader:add_le_field(field, range, value)
+	if not range then
+		return
+	end
+
+	if value == nil then
+		self.tree:add_le(field, range)
+	else
+		self.tree:add_le(field, range, value)
+	end
 end
 
 ---@param field ProtoField
@@ -66,7 +83,7 @@ function PayloadReader:string(field)
 		self:fail(field, start, value)
 	end
 
-	self.tree:add(field, range, value)
+	self:add_field(field, range, value)
 end
 
 ---@param field ProtoField
@@ -79,75 +96,75 @@ function PayloadReader:network_text(field)
 		self:fail(field, start, value)
 	end
 
-	self.tree:add(field, range, value.text)
+	self:add_field(field, range, value.text)
 end
 
 ---@param field ProtoField
 function PayloadReader:color(field)
 	local reader = color_reader.new(self.reader)
 	local _, range = reader:read()
-	self.tree:add(field, range)
+	self:add_field(field, range)
 end
 
 ---@param field ProtoField
 function PayloadReader:bool(field)
 	local value, range = self.reader:bool()
-	self.tree:add(field, range, value)
+	self:add_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:uint8(field)
 	local value, range = self.reader:uint8()
-	self.tree:add(field, range, value)
+	self:add_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:sbyte(field)
 	local value, range = self.reader:sbyte()
-	self.tree:add(field, range, value)
+	self:add_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:uint16_le(field)
 	local value, range = self.reader:uint16_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:int16_le(field)
 	local value, range = self.reader:int16_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:uint32_le(field)
 	local value, range = self.reader:uint32_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:int32_le(field)
 	local value, range = self.reader:int32_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:uint64_le(field)
 	local value, range = self.reader:uint64_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 function PayloadReader:single_le(field)
 	local value, range = self.reader:single_le()
-	self.tree:add_le(field, range, value)
+	self:add_le_field(field, range, value)
 end
 
 ---@param field ProtoField
 ---@param len integer
 function PayloadReader:bytes(field, len)
 	local value, range = self.reader:bytes(len)
-	self.tree:add(field, range, value)
+	self:add_field(field, range, value)
 end
 
 ---@param field ProtoField
@@ -157,46 +174,137 @@ end
 
 ---@param fields UpdatePlayerFields
 function PayloadReader:update_player(fields)
-	local reader = update_player_reader.new(self.reader)
-	local value = reader:read()
+	local value = update_player_reader.new(self.reader):read()
 
 	self:add_update_player_base(fields, value)
-	self:add_optional_vector(fields.velocity_x, fields.velocity_y, value.velocity)
-	self:add_optional_vector(
+	self:add_vector(fields.velocity_x, fields.velocity_y, value.velocity)
+	self:add_vector(
 		fields.original_position_x,
 		fields.original_position_y,
 		value.original_position
 	)
-	self:add_optional_vector(
-		fields.home_position_x,
-		fields.home_position_y,
-		value.home_position
-	)
+	self:add_vector(fields.home_position_x, fields.home_position_y, value.home_position)
 end
 
 ---@param fields UpdatePlayerFields
 ---@param value TerrariaUpdatePlayer
 function PayloadReader:add_update_player_base(fields, value)
-	self.tree:add(fields.player_id, value.player_id_range, value.player_id)
-	self.tree:add(fields.control, value.control_range, value.control)
-	self.tree:add(fields.pulley, value.pulley_range, value.pulley)
-	self.tree:add(fields.misc, value.misc_range, value.misc)
-	self.tree:add(fields.sleeping_info, value.sleeping_info_range, value.sleeping_info)
-	self.tree:add(fields.selected_item, value.selected_item_range, value.selected_item)
-	self.tree:add_le(fields.position_x, value.position.x_range, value.position.x)
-	self.tree:add_le(fields.position_y, value.position.y_range, value.position.y)
+	self:add_field(fields.player_id, value.player_id_range, value.player_id)
+	self:add_field(fields.control, value.control_range, value.control)
+	self:add_field(fields.pulley, value.pulley_range, value.pulley)
+	self:add_field(fields.misc, value.misc_range, value.misc)
+	self:add_field(fields.sleeping_info, value.sleeping_info_range, value.sleeping_info)
+	self:add_field(fields.selected_item, value.selected_item_range, value.selected_item)
+	self:add_vector(fields.position_x, fields.position_y, value.position)
 end
 
 ---@param x_field ProtoField
 ---@param y_field ProtoField
 ---@param vector TerrariaRangedVector2?
-function PayloadReader:add_optional_vector(x_field, y_field, vector)
+function PayloadReader:add_vector(x_field, y_field, vector)
 	if not vector then
 		return
 	end
 
-	self.tree:add_le(x_field, vector.x_range, vector.x)
-	self.tree:add_le(y_field, vector.y_range, vector.y)
+	self:add_le_field(x_field, vector.x_range, vector.x)
+	self:add_le_field(y_field, vector.y_range, vector.y)
+end
+
+---@param fields SendTileSquareFields
+function PayloadReader:send_tile_square(fields)
+	local value = send_tile_square_reader.new(self.reader):read()
+
+	self:add_le_field(fields.encoded_size, value.encoded_size_range, value.encoded_size)
+	self:add_le_field(fields.size, value.encoded_size_range, value.size)
+	self:add_field(fields.tile_change_type, value.tile_change_type_range, value.tile_change_type)
+	self:add_le_field(fields.tile_x, value.tile_x_range, value.tile_x)
+	self:add_le_field(fields.tile_y, value.tile_y_range, value.tile_y)
+	self:add_field(fields.tiles, value.tiles_range)
+end
+
+---@param fields NpcUpdateFields
+function PayloadReader:npc_update(fields)
+	local value = npc_update_reader.new(self.reader):read()
+
+	self:add_npc_update_base(fields, value)
+	self:add_npc_update_ai(fields, value)
+	self:add_npc_update_optional(fields, value)
+end
+
+---@param fields NpcUpdateFields
+---@param value TerrariaNpcUpdate
+function PayloadReader:add_npc_update_base(fields, value)
+	self:add_le_field(fields.npc_id, value.npc_id_range, value.npc_id)
+	self:add_vector(fields.position_x, fields.position_y, value.position)
+	self:add_vector(fields.velocity_x, fields.velocity_y, value.velocity)
+	self:add_le_field(fields.target, value.target_range, value.target)
+	self:add_field(fields.flags1, value.flags1_range, value.flags1)
+	self:add_field(fields.flags2, value.flags2_range, value.flags2)
+end
+
+---@param fields NpcUpdateFields
+---@param value TerrariaNpcUpdate
+function PayloadReader:add_npc_update_ai(fields, value)
+	for index = 1, 4 do
+		if value.ai[index] then
+			self:add_le_field(fields.ai[index], value.ai_ranges[index], value.ai[index])
+		end
+	end
+end
+
+---@param fields NpcUpdateFields
+---@param value TerrariaNpcUpdate
+function PayloadReader:add_npc_update_life(fields, value)
+	if value.life then
+		if value.life_bytes == 1 then
+			self:add_field(fields.life, value.life_range, value.life)
+		else
+			self:add_le_field(fields.life, value.life_range, value.life)
+		end
+	end
+
+	self:add_field(fields.life_raw, value.life_raw_range)
+end
+
+---@param fields NpcUpdateFields
+---@param value TerrariaNpcUpdate
+function PayloadReader:add_npc_update_optional(fields, value)
+	self:add_le_field(fields.npc_net_id, value.npc_net_id_range, value.npc_net_id)
+	self:add_field(fields.difficulty_player_count, value.difficulty_player_count_range)
+	self:add_le_field(fields.strength_multiplier, value.strength_multiplier_range)
+	self:add_field(fields.life_bytes, value.life_bytes_range, value.life_bytes)
+	self:add_npc_update_life(fields, value)
+	self:add_field(fields.release_owner, value.release_owner_range, value.release_owner)
+end
+
+---@param fields ProjectileUpdateFields
+function PayloadReader:projectile_update(fields)
+	local value = projectile_update_reader.new(self.reader):read()
+
+	self:add_projectile_update_base(fields, value)
+	self:add_projectile_update_optional(fields, value)
+end
+
+---@param fields ProjectileUpdateFields
+---@param value TerrariaProjectileUpdate
+function PayloadReader:add_projectile_update_base(fields, value)
+	self:add_le_field(fields.projectile_id, value.projectile_id_range, value.projectile_id)
+	self:add_vector(fields.position_x, fields.position_y, value.position)
+	self:add_vector(fields.velocity_x, fields.velocity_y, value.velocity)
+	self:add_field(fields.owner, value.owner_range, value.owner)
+	self:add_le_field(fields.projectile_type, value.projectile_type_range, value.projectile_type)
+	self:add_field(fields.flags, value.flags_range, value.flags)
+end
+
+---@param fields ProjectileUpdateFields
+---@param value TerrariaProjectileUpdate
+function PayloadReader:add_projectile_update_optional(fields, value)
+	self:add_le_field(fields.ai0, value.ai0_range, value.ai0)
+	self:add_le_field(fields.ai1, value.ai1_range, value.ai1)
+	self:add_le_field(fields.damage, value.damage_range, value.damage)
+	self:add_le_field(fields.knockback, value.knockback_range, value.knockback)
+	self:add_le_field(fields.original_damage, value.original_damage_range, value.original_damage)
+	self:add_le_field(fields.projectile_uuid, value.projectile_uuid_range, value.projectile_uuid)
 end
 
 return PayloadReader

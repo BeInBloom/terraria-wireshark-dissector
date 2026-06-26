@@ -3,6 +3,64 @@
 ---@field name string
 ---@field valid boolean
 
+---@class UpdatePlayerFields
+---@field player_id ProtoField
+---@field control ProtoField
+---@field pulley ProtoField
+---@field misc ProtoField
+---@field sleeping_info ProtoField
+---@field selected_item ProtoField
+---@field position_x ProtoField
+---@field position_y ProtoField
+---@field velocity_x ProtoField
+---@field velocity_y ProtoField
+---@field original_position_x ProtoField
+---@field original_position_y ProtoField
+---@field home_position_x ProtoField
+---@field home_position_y ProtoField
+
+---@class SendTileSquareFields
+---@field encoded_size ProtoField
+---@field size ProtoField
+---@field tile_change_type ProtoField
+---@field tile_x ProtoField
+---@field tile_y ProtoField
+---@field tiles ProtoField
+
+---@class NpcUpdateFields
+---@field npc_id ProtoField
+---@field position_x ProtoField
+---@field position_y ProtoField
+---@field velocity_x ProtoField
+---@field velocity_y ProtoField
+---@field target ProtoField
+---@field flags1 ProtoField
+---@field flags2 ProtoField
+---@field ai ProtoField[]
+---@field npc_net_id ProtoField
+---@field difficulty_player_count ProtoField
+---@field strength_multiplier ProtoField
+---@field life_bytes ProtoField
+---@field life ProtoField
+---@field life_raw ProtoField
+---@field release_owner ProtoField
+
+---@class ProjectileUpdateFields
+---@field projectile_id ProtoField
+---@field position_x ProtoField
+---@field position_y ProtoField
+---@field velocity_x ProtoField
+---@field velocity_y ProtoField
+---@field owner ProtoField
+---@field projectile_type ProtoField
+---@field flags ProtoField
+---@field ai0 ProtoField
+---@field ai1 ProtoField
+---@field damage ProtoField
+---@field knockback ProtoField
+---@field original_damage ProtoField
+---@field projectile_uuid ProtoField
+
 ---@class TerrariaVector2
 ---@field x number
 ---@field y number
@@ -177,3 +235,68 @@
 ---@field misc_range TvbRange
 ---@field sleeping_info_range TvbRange
 ---@field selected_item_range TvbRange
+
+---@class TerrariaSendTileSquare
+---@field encoded_size integer
+---@field size integer
+---@field tile_change_type? integer
+---@field tile_x integer
+---@field tile_y integer
+---@field tiles? string
+---@field encoded_size_range TvbRange
+---@field tile_change_type_range? TvbRange
+---@field tile_x_range TvbRange
+---@field tile_y_range TvbRange
+---@field tiles_range? TvbRange
+
+---@class TerrariaNpcUpdate
+---@field npc_id integer
+---@field position TerrariaRangedVector2
+---@field velocity TerrariaRangedVector2
+---@field target integer
+---@field flags1 integer
+---@field flags2 integer
+---@field ai number[]
+---@field ai_ranges TvbRange[]
+---@field npc_net_id integer
+---@field difficulty_player_count? integer
+---@field strength_multiplier? number
+---@field life_bytes? integer
+---@field life? integer
+---@field life_raw? string
+---@field release_owner? integer
+---@field npc_id_range TvbRange
+---@field target_range TvbRange
+---@field flags1_range TvbRange
+---@field flags2_range TvbRange
+---@field npc_net_id_range TvbRange
+---@field difficulty_player_count_range? TvbRange
+---@field strength_multiplier_range? TvbRange
+---@field life_bytes_range? TvbRange
+---@field life_range? TvbRange
+---@field life_raw_range? TvbRange
+---@field release_owner_range? TvbRange
+
+---@class TerrariaProjectileUpdate
+---@field projectile_id integer
+---@field position TerrariaRangedVector2
+---@field velocity TerrariaRangedVector2
+---@field owner integer
+---@field projectile_type integer
+---@field flags integer
+---@field ai0? number
+---@field ai1? number
+---@field damage? integer
+---@field knockback? number
+---@field original_damage? integer
+---@field projectile_uuid? integer
+---@field projectile_id_range TvbRange
+---@field owner_range TvbRange
+---@field projectile_type_range TvbRange
+---@field flags_range TvbRange
+---@field ai0_range? TvbRange
+---@field ai1_range? TvbRange
+---@field damage_range? TvbRange
+---@field knockback_range? TvbRange
+---@field original_damage_range? TvbRange
+---@field projectile_uuid_range? TvbRange

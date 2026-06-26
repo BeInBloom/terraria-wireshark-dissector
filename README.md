@@ -17,8 +17,11 @@ src/terraria/
     │   ├── color_reader.lua
     │   ├── item_data_reader.lua
     │   ├── network_text_reader.lua
+    │   ├── npc_update_reader.lua
     │   ├── particle_orchestra_reader.lua
     │   ├── player_death_reason_reader.lua
+    │   ├── projectile_update_reader.lua
+    │   ├── send_tile_square_reader.lua
     │   ├── sign_reader.lua
     │   ├── string_reader.lua
     │   ├── tile_entity_extra_reader.lua
