@@ -27,6 +27,7 @@ src/terraria/
     │   ├── tile_entity_extra_reader.lua
     │   ├── tile_entity_reader.lua
     │   ├── tile_reader.lua
+    │   ├── update_item_drop_reader.lua
     │   ├── update_player_reader.lua
     │   └── vector2_reader.lua
     ├── context.lua

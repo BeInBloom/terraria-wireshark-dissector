@@ -1,4 +1,5 @@
 local fields = {
+	root = ProtoField.bytes("terraria.update_player.root", "Update Player"),
 	player_id = ProtoField.uint8("terraria.update_player.player_id", "Player ID", base.DEC),
 	control = ProtoField.uint8("terraria.update_player.control", "Control", base.HEX),
 	pulley = ProtoField.uint8("terraria.update_player.pulley", "Pulley", base.HEX),
@@ -13,10 +14,16 @@ local fields = {
 		"Selected Item",
 		base.DEC
 	),
+	position = ProtoField.bytes("terraria.update_player.position", "Position"),
 	position_x = ProtoField.float("terraria.update_player.position_x", "Position X"),
 	position_y = ProtoField.float("terraria.update_player.position_y", "Position Y"),
+	velocity = ProtoField.bytes("terraria.update_player.velocity", "Velocity"),
 	velocity_x = ProtoField.float("terraria.update_player.velocity_x", "Velocity X"),
 	velocity_y = ProtoField.float("terraria.update_player.velocity_y", "Velocity Y"),
+	original_position = ProtoField.bytes(
+		"terraria.update_player.original_position",
+		"Original Position"
+	),
 	original_position_x = ProtoField.float(
 		"terraria.update_player.original_position_x",
 		"Original Position X"
@@ -25,6 +32,7 @@ local fields = {
 		"terraria.update_player.original_position_y",
 		"Original Position Y"
 	),
+	home_position = ProtoField.bytes("terraria.update_player.home_position", "Home Position"),
 	home_position_x = ProtoField.float(
 		"terraria.update_player.home_position_x",
 		"Home Position X"
@@ -44,18 +52,23 @@ return {
 	id = 13,
 	build = build,
 	fields = {
+		fields.root,
 		fields.player_id,
 		fields.control,
 		fields.pulley,
 		fields.misc,
 		fields.sleeping_info,
 		fields.selected_item,
+		fields.position,
 		fields.position_x,
 		fields.position_y,
+		fields.velocity,
 		fields.velocity_x,
 		fields.velocity_y,
+		fields.original_position,
 		fields.original_position_x,
 		fields.original_position_y,
+		fields.home_position,
 		fields.home_position_x,
 		fields.home_position_y,
 	},

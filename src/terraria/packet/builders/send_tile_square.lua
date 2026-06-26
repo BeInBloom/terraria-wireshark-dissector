@@ -1,4 +1,6 @@
 local fields = {
+	root = ProtoField.bytes("terraria.send_tile_square.root", "Send Tile Square"),
+	header = ProtoField.bytes("terraria.send_tile_square.header", "Header"),
 	encoded_size = ProtoField.uint16(
 		"terraria.send_tile_square.encoded_size",
 		"Encoded Size",
@@ -24,6 +26,8 @@ return {
 	id = 20,
 	build = build,
 	fields = {
+		fields.root,
+		fields.header,
 		fields.encoded_size,
 		fields.size,
 		fields.tile_change_type,

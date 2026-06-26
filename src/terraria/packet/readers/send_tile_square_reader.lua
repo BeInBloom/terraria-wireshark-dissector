@@ -34,17 +34,25 @@ function SendTileSquareReader:read_tiles(value)
 	value.tiles, value.tiles_range = self.reader:bytes(self.reader:remaining())
 end
 
----@return TerrariaSendTileSquare
----@return TvbRange
-function SendTileSquareReader:read()
+---@param value TerrariaSendTileSquare
+function SendTileSquareReader:read_header(value)
 	local start = self.reader:position()
-	local value = {}
 
 	value.encoded_size, value.encoded_size_range = self.reader:uint16_le()
 	value.size = value.encoded_size & SIZE_MASK
 	self:read_tile_change_type(value)
 	value.tile_x, value.tile_x_range = self.reader:int16_le()
 	value.tile_y, value.tile_y_range = self.reader:int16_le()
+	value.header_range = self.reader:range_from(start)
+end
+
+---@return TerrariaSendTileSquare
+---@return TvbRange
+function SendTileSquareReader:read()
+	local start = self.reader:position()
+	local value = {}
+
+	self:read_header(value)
 	self:read_tiles(value)
 
 	return value, self.reader:range_from(start)

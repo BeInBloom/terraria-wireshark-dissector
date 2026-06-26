@@ -3,6 +3,7 @@ local status_max = ProtoField.int32(
 	"Status Max",
 	base.DEC
 )
+local message = ProtoField.bytes("terraria.status.message", "Message")
 local text = ProtoField.string("terraria.status.text", "Status Text")
 local text_flags = ProtoField.uint8(
 	"terraria.status.text_flags",
@@ -11,10 +12,15 @@ local text_flags = ProtoField.uint8(
 )
 
 ---@param payload PayloadReader
-local function build(payload)
-	payload:int32_le(status_max)
+local function build_message(payload)
 	payload:network_text(text)
 	payload:uint8(text_flags)
+end
+
+---@param payload PayloadReader
+local function build(payload)
+	payload:int32_le(status_max)
+	payload:group(message, "Message", build_message)
 end
 
 return {
@@ -22,6 +28,7 @@ return {
 	build = build,
 	fields = {
 		status_max,
+		message,
 		text,
 		text_flags,
 	},

@@ -22,10 +22,17 @@ end
 
 ---@return TerrariaRangedVector2
 function ProjectileUpdateReader:read_vector()
+	local start = self.reader:position()
 	local x, x_range = self.reader:single_le()
 	local y, y_range = self.reader:single_le()
 
-	return { x = x, y = y, x_range = x_range, y_range = y_range }
+	return {
+		x = x,
+		y = y,
+		range = self.reader:range_from(start),
+		x_range = x_range,
+		y_range = y_range,
+	}
 end
 
 ---@return TerrariaProjectileUpdate
@@ -44,11 +51,17 @@ end
 
 ---@param value TerrariaProjectileUpdate
 function ProjectileUpdateReader:read_ai(value)
+	local start = self.reader:position()
+
 	if (value.flags & AI0) ~= 0 then
 		value.ai0, value.ai0_range = self.reader:single_le()
 	end
 	if (value.flags & AI1) ~= 0 then
 		value.ai1, value.ai1_range = self.reader:single_le()
+	end
+
+	if self.reader:position() > start then
+		value.ai_range = self.reader:range_from(start)
 	end
 end
 
@@ -59,6 +72,18 @@ function ProjectileUpdateReader:read_stats(value)
 	end
 	if (value.flags & KNOCKBACK) ~= 0 then
 		value.knockback, value.knockback_range = self.reader:single_le()
+	end
+end
+
+---@param value TerrariaProjectileUpdate
+function ProjectileUpdateReader:read_stats_group(value)
+	local start = self.reader:position()
+
+	self:read_stats(value)
+	self:read_original_identity(value)
+
+	if self.reader:position() > start then
+		value.stats_range = self.reader:range_from(start)
 	end
 end
 
@@ -79,8 +104,7 @@ function ProjectileUpdateReader:read()
 	local value = self:read_base()
 
 	self:read_ai(value)
-	self:read_stats(value)
-	self:read_original_identity(value)
+	self:read_stats_group(value)
 
 	return value, self.reader:range_from(start)
 end

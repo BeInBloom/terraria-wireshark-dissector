@@ -4,22 +4,29 @@
 ---@field valid boolean
 
 ---@class UpdatePlayerFields
+---@field root ProtoField
 ---@field player_id ProtoField
 ---@field control ProtoField
 ---@field pulley ProtoField
 ---@field misc ProtoField
 ---@field sleeping_info ProtoField
 ---@field selected_item ProtoField
+---@field position ProtoField
 ---@field position_x ProtoField
 ---@field position_y ProtoField
+---@field velocity ProtoField
 ---@field velocity_x ProtoField
 ---@field velocity_y ProtoField
+---@field original_position ProtoField
 ---@field original_position_x ProtoField
 ---@field original_position_y ProtoField
+---@field home_position ProtoField
 ---@field home_position_x ProtoField
 ---@field home_position_y ProtoField
 
 ---@class SendTileSquareFields
+---@field root ProtoField
+---@field header ProtoField
 ---@field encoded_size ProtoField
 ---@field size ProtoField
 ---@field tile_change_type ProtoField
@@ -28,44 +35,70 @@
 ---@field tiles ProtoField
 
 ---@class NpcUpdateFields
+---@field root ProtoField
 ---@field npc_id ProtoField
+---@field position ProtoField
 ---@field position_x ProtoField
 ---@field position_y ProtoField
+---@field velocity ProtoField
 ---@field velocity_x ProtoField
 ---@field velocity_y ProtoField
 ---@field target ProtoField
 ---@field flags1 ProtoField
 ---@field flags2 ProtoField
+---@field ai_group ProtoField
 ---@field ai ProtoField[]
 ---@field npc_net_id ProtoField
 ---@field difficulty_player_count ProtoField
 ---@field strength_multiplier ProtoField
+---@field life_group ProtoField
 ---@field life_bytes ProtoField
 ---@field life ProtoField
 ---@field life_raw ProtoField
 ---@field release_owner ProtoField
 
 ---@class ProjectileUpdateFields
+---@field root ProtoField
 ---@field projectile_id ProtoField
+---@field position ProtoField
 ---@field position_x ProtoField
 ---@field position_y ProtoField
+---@field velocity ProtoField
 ---@field velocity_x ProtoField
 ---@field velocity_y ProtoField
 ---@field owner ProtoField
 ---@field projectile_type ProtoField
 ---@field flags ProtoField
+---@field ai_group ProtoField
 ---@field ai0 ProtoField
 ---@field ai1 ProtoField
+---@field stats_group ProtoField
 ---@field damage ProtoField
 ---@field knockback ProtoField
 ---@field original_damage ProtoField
 ---@field projectile_uuid ProtoField
+
+---@class UpdateItemDropFields
+---@field root ProtoField
+---@field item_id ProtoField
+---@field position ProtoField
+---@field position_x ProtoField
+---@field position_y ProtoField
+---@field velocity ProtoField
+---@field velocity_x ProtoField
+---@field velocity_y ProtoField
+---@field item ProtoField
+---@field stack_size ProtoField
+---@field prefix ProtoField
+---@field no_delay ProtoField
+---@field item_net_id ProtoField
 
 ---@class TerrariaVector2
 ---@field x number
 ---@field y number
 
 ---@class TerrariaRangedVector2: TerrariaVector2
+---@field range TvbRange
 ---@field x_range TvbRange
 ---@field y_range TvbRange
 
@@ -111,6 +144,21 @@
 ---@field type_range TvbRange
 ---@field prefix_range TvbRange
 ---@field stack_range TvbRange
+
+---@class TerrariaUpdateItemDrop
+---@field item_id integer
+---@field position TerrariaRangedVector2
+---@field velocity TerrariaRangedVector2
+---@field stack_size integer
+---@field prefix integer
+---@field no_delay integer
+---@field item_net_id integer
+---@field item_id_range TvbRange
+---@field item_range TvbRange
+---@field stack_size_range TvbRange
+---@field prefix_range TvbRange
+---@field no_delay_range TvbRange
+---@field item_net_id_range TvbRange
 
 ---@class TerrariaParticleOrchestra
 ---@field position TerrariaVector2
@@ -244,6 +292,7 @@
 ---@field tile_y integer
 ---@field tiles? string
 ---@field encoded_size_range TvbRange
+---@field header_range TvbRange
 ---@field tile_change_type_range? TvbRange
 ---@field tile_x_range TvbRange
 ---@field tile_y_range TvbRange
@@ -258,12 +307,14 @@
 ---@field flags2 integer
 ---@field ai number[]
 ---@field ai_ranges TvbRange[]
+---@field ai_range? TvbRange
 ---@field npc_net_id integer
 ---@field difficulty_player_count? integer
 ---@field strength_multiplier? number
 ---@field life_bytes? integer
 ---@field life? integer
 ---@field life_raw? string
+---@field life_group_range? TvbRange
 ---@field release_owner? integer
 ---@field npc_id_range TvbRange
 ---@field target_range TvbRange
@@ -290,6 +341,8 @@
 ---@field knockback? number
 ---@field original_damage? integer
 ---@field projectile_uuid? integer
+---@field ai_range? TvbRange
+---@field stats_range? TvbRange
 ---@field projectile_id_range TvbRange
 ---@field owner_range TvbRange
 ---@field projectile_type_range TvbRange

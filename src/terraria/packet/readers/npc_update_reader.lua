@@ -23,10 +23,17 @@ end
 
 ---@return TerrariaRangedVector2
 function NpcUpdateReader:read_vector()
+	local start = self.reader:position()
 	local x, x_range = self.reader:single_le()
 	local y, y_range = self.reader:single_le()
 
-	return { x = x, y = y, x_range = x_range, y_range = y_range }
+	return {
+		x = x,
+		y = y,
+		range = self.reader:range_from(start),
+		x_range = x_range,
+		y_range = y_range,
+	}
 end
 
 ---@return TerrariaNpcUpdate
@@ -56,6 +63,7 @@ end
 
 ---@param value TerrariaNpcUpdate
 function NpcUpdateReader:read_ai(value)
+	local start = self.reader:position()
 	value.ai = {}
 	value.ai_ranges = {}
 
@@ -63,6 +71,10 @@ function NpcUpdateReader:read_ai(value)
 	self:read_ai_value(value, 2, AI1)
 	self:read_ai_value(value, 3, AI2)
 	self:read_ai_value(value, 4, AI3)
+
+	if self.reader:position() > start then
+		value.ai_range = self.reader:range_from(start)
+	end
 end
 
 ---@param value TerrariaNpcUpdate
@@ -84,8 +96,10 @@ function NpcUpdateReader:read_life(value)
 		return
 	end
 
+	local start = self.reader:position()
 	value.life_bytes, value.life_bytes_range = self.reader:uint8()
 	self:read_life_value(value)
+	value.life_group_range = self.reader:range_from(start)
 end
 
 ---@param value TerrariaNpcUpdate

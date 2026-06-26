@@ -104,11 +104,8 @@ function TerrariaDissector:dissect_known(ctx, pinfo, tree)
 
 	local has_builder = self.payload_dissector:get_builder(ctx.id) ~= nil
 	if ctx.payload_len > 0 or has_builder then
-		local payload_tree = subtree:add(
-			self.fields.payload,
-			ctx:payload_range(),
-			"Payload"
-		)
+		local payload_tree = subtree:add(self.fields.payload, ctx:payload_range())
+		payload_tree:set_text("Payload")
 
 		self.payload_dissector:dissect(ctx, payload_tree)
 	end

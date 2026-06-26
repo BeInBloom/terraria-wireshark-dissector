@@ -7,14 +7,18 @@ local function define(factory, name, label, display)
 end
 
 local fields = {
+	root = define(ProtoField.bytes, "root", "NPC Update"),
 	npc_id = define(ProtoField.int16, "npc_id", "NPC ID", base.DEC),
+	position = define(ProtoField.bytes, "position", "Position"),
 	position_x = define(ProtoField.float, "position_x", "Position X"),
 	position_y = define(ProtoField.float, "position_y", "Position Y"),
+	velocity = define(ProtoField.bytes, "velocity", "Velocity"),
 	velocity_x = define(ProtoField.float, "velocity_x", "Velocity X"),
 	velocity_y = define(ProtoField.float, "velocity_y", "Velocity Y"),
 	target = define(ProtoField.uint16, "target", "Target", base.DEC),
 	flags1 = define(ProtoField.uint8, "flags1", "NPC Flags 1", base.HEX),
 	flags2 = define(ProtoField.uint8, "flags2", "NPC Flags 2", base.HEX),
+	ai_group = define(ProtoField.bytes, "ai", "AI"),
 	ai = {
 		define(ProtoField.float, "ai0", "AI 0"),
 		define(ProtoField.float, "ai1", "AI 1"),
@@ -29,6 +33,7 @@ local fields = {
 		base.DEC
 	),
 	strength_multiplier = define(ProtoField.float, "strength_multiplier", "Strength Multiplier"),
+	life_group = define(ProtoField.bytes, "life_group", "Life"),
 	life_bytes = define(ProtoField.uint8, "life_bytes", "Life Bytes", base.DEC),
 	life = define(ProtoField.int32, "life", "Life", base.DEC),
 	life_raw = define(ProtoField.bytes, "life_raw", "Raw Life"),

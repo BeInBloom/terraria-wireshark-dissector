@@ -18,12 +18,14 @@ end
 
 ---@return TerrariaRangedVector2
 function UpdatePlayerReader:read_vector()
+	local start = self.reader:position()
 	local x, x_range = self.reader:single_le()
 	local y, y_range = self.reader:single_le()
 
 	return {
 		x = x,
 		y = y,
+		range = self.reader:range_from(start),
 		x_range = x_range,
 		y_range = y_range,
 	}

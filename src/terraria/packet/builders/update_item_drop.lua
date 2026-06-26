@@ -1,42 +1,40 @@
-local item_id = ProtoField.int16("terraria.update_item_drop.item_id", "Item ID", base.DEC)
-local position_x = ProtoField.float("terraria.update_item_drop.position_x", "Position X")
-local position_y = ProtoField.float("terraria.update_item_drop.position_y", "Position Y")
-local velocity_x = ProtoField.float("terraria.update_item_drop.velocity_x", "Velocity X")
-local velocity_y = ProtoField.float("terraria.update_item_drop.velocity_y", "Velocity Y")
-local stack_size = ProtoField.int16("terraria.update_item_drop.stack_size", "Stack Size", base.DEC)
-local prefix = ProtoField.uint8("terraria.update_item_drop.prefix", "Prefix", base.DEC)
-local no_delay = ProtoField.uint8("terraria.update_item_drop.no_delay", "No Delay", base.DEC)
-local item_net_id = ProtoField.int16("terraria.update_item_drop.item_net_id", "Item Net ID", base.DEC)
-
-local function build_movement(payload)
-	payload:single_le(position_x)
-	payload:single_le(position_y)
-	payload:single_le(velocity_x)
-	payload:single_le(velocity_y)
-end
+local fields = {
+	root = ProtoField.bytes("terraria.update_item_drop.root", "Update Item Drop"),
+	item_id = ProtoField.int16("terraria.update_item_drop.item_id", "Item ID", base.DEC),
+	position = ProtoField.bytes("terraria.update_item_drop.position", "Position"),
+	position_x = ProtoField.float("terraria.update_item_drop.position_x", "Position X"),
+	position_y = ProtoField.float("terraria.update_item_drop.position_y", "Position Y"),
+	velocity = ProtoField.bytes("terraria.update_item_drop.velocity", "Velocity"),
+	velocity_x = ProtoField.float("terraria.update_item_drop.velocity_x", "Velocity X"),
+	velocity_y = ProtoField.float("terraria.update_item_drop.velocity_y", "Velocity Y"),
+	item = ProtoField.bytes("terraria.update_item_drop.item", "Item"),
+	stack_size = ProtoField.int16("terraria.update_item_drop.stack_size", "Stack Size", base.DEC),
+	prefix = ProtoField.uint8("terraria.update_item_drop.prefix", "Prefix", base.DEC),
+	no_delay = ProtoField.uint8("terraria.update_item_drop.no_delay", "No Delay", base.DEC),
+	item_net_id = ProtoField.int16("terraria.update_item_drop.item_net_id", "Item Net ID", base.DEC),
+}
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:int16_le(item_id)
-	build_movement(payload)
-	payload:int16_le(stack_size)
-	payload:uint8(prefix)
-	payload:uint8(no_delay)
-	payload:int16_le(item_net_id)
+	payload:update_item_drop(fields)
 end
 
 return {
 	id = 21,
 	build = build,
 	fields = {
-		item_id,
-		position_x,
-		position_y,
-		velocity_x,
-		velocity_y,
-		stack_size,
-		prefix,
-		no_delay,
-		item_net_id,
+		fields.root,
+		fields.item_id,
+		fields.position,
+		fields.position_x,
+		fields.position_y,
+		fields.velocity,
+		fields.velocity_x,
+		fields.velocity_y,
+		fields.item,
+		fields.stack_size,
+		fields.prefix,
+		fields.no_delay,
+		fields.item_net_id,
 	},
 }
