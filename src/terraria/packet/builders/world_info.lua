@@ -277,13 +277,23 @@ end
 ---@param payload PayloadReader
 local function build_event_flags(payload)
 	payload:group(event_flags, function(payload)
-		payload:uint8(event_info)
-		payload:uint8(event_info_2)
-		payload:uint8(event_info_3)
-		payload:uint8(event_info_4)
-		payload:uint8(event_info_5)
-		payload:uint8(event_info_6)
-		payload:uint8(event_info_7)
+		local event_fields = {
+			event_info,
+			event_info_2,
+			event_info_3,
+			event_info_4,
+			event_info_5,
+			event_info_6,
+			event_info_7,
+		}
+
+		for index = 1, #event_fields do
+			if payload.reader:remaining() == 0 then
+				return
+			end
+
+			payload:uint8(event_fields[index])
+		end
 	end)
 end
 
@@ -298,13 +308,23 @@ end
 ---@param payload PayloadReader
 local function build_ore_tiers(payload)
 	payload:group(ore_tiers, function(payload)
-		payload:int16_le(copper_ore)
-		payload:int16_le(iron_ore)
-		payload:int16_le(silver_ore)
-		payload:int16_le(gold_ore)
-		payload:int16_le(cobalt_ore)
-		payload:int16_le(mythril_ore)
-		payload:int16_le(adamantite_ore)
+		local ore_fields = {
+			copper_ore,
+			iron_ore,
+			silver_ore,
+			gold_ore,
+			cobalt_ore,
+			mythril_ore,
+			adamantite_ore,
+		}
+
+		for index = 1, #ore_fields do
+			if payload.reader:remaining() < 2 then
+				return
+			end
+
+			payload:int16_le(ore_fields[index])
+		end
 	end)
 end
 
@@ -312,9 +332,18 @@ end
 local function build_progression(payload)
 	payload:group(progression, function(payload)
 		build_ore_tiers(payload)
-		payload:sbyte(invasion_type)
-		payload:uint64_le(lobby_id)
-		payload:single_le(sandstorm_severity)
+
+		if payload.reader:remaining() >= 1 then
+			payload:sbyte(invasion_type)
+		end
+
+		if payload.reader:remaining() >= 8 then
+			payload:uint64_le(lobby_id)
+		end
+
+		if payload.reader:remaining() >= 4 then
+			payload:single_le(sandstorm_severity)
+		end
 	end)
 end
 
@@ -327,7 +356,10 @@ local function build(payload)
 	build_tree_layout(payload)
 	build_tree_tops(payload)
 	build_events(payload)
-	build_progression(payload)
+
+	if payload.reader:remaining() > 0 then
+		build_progression(payload)
+	end
 end
 
 return {

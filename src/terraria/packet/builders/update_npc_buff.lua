@@ -27,6 +27,10 @@ local function build(payload)
 	payload:int16_le(npc_id)
 
 	for index = 1, #buff_pairs do
+		if payload.reader:remaining() < 4 then
+			return
+		end
+
 		local pair = buff_pairs[index]
 		payload:uint16_le(pair.buff_id)
 		payload:int16_le(pair.time)

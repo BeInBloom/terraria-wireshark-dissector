@@ -9,8 +9,16 @@ local town_npc_variation_index = ProtoField.int32(
 ---@param payload PayloadReader
 local function build(payload)
 	payload:int16_le(npc_id)
+
+	if payload.reader:remaining() == 0 then
+		return
+	end
+
 	payload:string(name)
-	payload:int32_le(town_npc_variation_index)
+
+	if payload.reader:remaining() >= 4 then
+		payload:int32_le(town_npc_variation_index)
+	end
 end
 
 return {

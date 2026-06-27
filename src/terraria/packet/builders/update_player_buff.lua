@@ -17,6 +17,10 @@ end
 ---@param payload PayloadReader
 local function build_buffs(payload)
 	for index = 1, 22 do
+		if payload.reader:remaining() < 2 then
+			return
+		end
+
 		payload:uint16_le(buff_types[index])
 	end
 end

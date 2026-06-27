@@ -30,4 +30,5 @@ check-lua:
 runtime-check:
 	@test -n "$(PCAP)" || (echo "Set PCAP=/path/to/capture.pcap[ng]" && exit 1)
 	$(MAKE) install PLUGIN_DIR="$(RUNTIME_PLUGIN_DIR)"
-	WIRESHARK_PLUGIN_DIR="$(RUNTIME_PLUGIN_DIR)" tshark -r "$(PCAP)" -V >/dev/null
+	WIRESHARK_PLUGIN_DIR="$(RUNTIME_PLUGIN_DIR)" tshark -r "$(PCAP)" -V >"/tmp/terraria-runtime-check.log" 2>&1
+	@echo "Runtime log: /tmp/terraria-runtime-check.log"
