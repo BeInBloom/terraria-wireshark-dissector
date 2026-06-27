@@ -58,19 +58,25 @@ local cooldown_counter = ProtoField.int8(
 )
 local player_death_reason_reader = require("terraria.packet.readers.player_death_reason_reader")
 
-local function add_reason_fields(tree, value, payload)
-	payload:add_tree_field(tree, death_reason_flags, value.flags_range, value.flags)
-	payload:add_tree_field(tree, killer_player_id, value.killer_player_id_range, value.killer_player_id)
-	payload:add_tree_field(tree, killer_npc_index, value.killer_npc_index_range, value.killer_npc_index)
-	payload:add_tree_field(tree, projectile_index, value.projectile_index_range, value.projectile_index)
-	payload:add_tree_field(tree, other_death_type, value.other_death_type_range, value.other_death_type)
-	payload:add_tree_field(tree, projectile_type, value.projectile_type_range, value.projectile_type)
-	payload:add_tree_field(tree, item_type, value.item_type_range, value.item_type)
-	payload:add_tree_field(tree, item_prefix, value.item_prefix_range, value.item_prefix)
-	payload:add_tree_field(tree, custom_reason, value.custom_reason_range, value.custom_reason)
+---@param tree TreeItem
+---@param value TerrariaPlayerDeathReason
+local function add_reason_fields(tree, value)
+	tree:add(death_reason_flags, value.flags_range, value.flags)
+	tree:add(killer_player_id, value.killer_player_id_range, value.killer_player_id)
+	tree:add(killer_npc_index, value.killer_npc_index_range, value.killer_npc_index)
+	tree:add(projectile_index, value.projectile_index_range, value.projectile_index)
+	tree:add(other_death_type, value.other_death_type_range, value.other_death_type)
+	tree:add(projectile_type, value.projectile_type_range, value.projectile_type)
+	tree:add(item_type, value.item_type_range, value.item_type)
+	tree:add(item_prefix, value.item_prefix_range, value.item_prefix)
+
+	if value.custom_reason_range then
+		tree:add(custom_reason, value.custom_reason_range, value.custom_reason)
+	end
 end
 
 ---@param payload PayloadReader
+---@return nil
 local function build_death_reason(payload)
 	local value = player_death_reason_reader.new(payload.reader):read()
 	add_reason_fields(payload.tree, value)
@@ -79,7 +85,7 @@ end
 ---@param payload PayloadReader
 local function build(payload)
 	payload:uint8(player_id)
-	payload:group(death_reason, "Death Reason", build_death_reason)
+	payload:group(death_reason, build_death_reason)
 	payload:int16_le(damage)
 	payload:uint8(hit_direction)
 	payload:uint8(flags)

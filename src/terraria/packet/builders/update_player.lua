@@ -1,3 +1,5 @@
+local update_player_reader = require("terraria.packet.readers.update_player_reader")
+
 local fields = {
 	root = ProtoField.bytes("terraria.update_player.root", "Update Player"),
 	player_id = ProtoField.uint8("terraria.update_player.player_id", "Player ID", base.DEC),
@@ -43,9 +45,65 @@ local fields = {
 	),
 }
 
+local vectors = {
+	position = {
+		group_field = fields.position,
+		x_field = fields.position_x,
+		y_field = fields.position_y,
+	},
+	velocity = {
+		group_field = fields.velocity,
+		x_field = fields.velocity_x,
+		y_field = fields.velocity_y,
+	},
+	original_position = {
+		group_field = fields.original_position,
+		x_field = fields.original_position_x,
+		y_field = fields.original_position_y,
+	},
+	home_position = {
+		group_field = fields.home_position,
+		x_field = fields.home_position_x,
+		y_field = fields.home_position_y,
+	},
+}
+
+---@param tree TreeItem
+---@param fields table
+---@param value TerrariaUpdatePlayer
+---@return nil
+local function add_update_player_base(tree, fields, value)
+	tree:add(fields.player_id, value.player_id_range, value.player_id)
+	tree:add(fields.control, value.control_range, value.control)
+	tree:add(fields.pulley, value.pulley_range, value.pulley)
+	tree:add(fields.misc, value.misc_range, value.misc)
+	tree:add(fields.sleeping_info, value.sleeping_info_range, value.sleeping_info)
+	tree:add(fields.selected_item, value.selected_item_range, value.selected_item)
+end
+
+---@param parent TreeItem
+---@param spec { group_field: ProtoField, x_field: ProtoField, y_field: ProtoField }
+---@param vector TerrariaRangedVector2?
+local function add_vector_group(parent, spec, vector)
+	if not vector then
+		return
+	end
+
+	local tree = parent:add(spec.group_field, vector.range)
+	tree:add_le(spec.x_field, vector.x_range, vector.x)
+	tree:add_le(spec.y_field, vector.y_range, vector.y)
+end
+
 ---@param payload PayloadReader
 local function build(payload)
-	payload:update_player(fields)
+	local value, range = update_player_reader.new(payload.reader):read()
+	local tree = payload.tree:add(fields.root, range)
+
+	add_update_player_base(tree, fields, value)
+	add_vector_group(tree, vectors.position, value.position)
+	add_vector_group(tree, vectors.velocity, value.velocity)
+	add_vector_group(tree, vectors.original_position, value.original_position)
+	add_vector_group(tree, vectors.home_position, value.home_position)
 end
 
 return {

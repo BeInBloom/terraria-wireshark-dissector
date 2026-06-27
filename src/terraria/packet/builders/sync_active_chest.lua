@@ -9,7 +9,10 @@ local chest_name = ProtoField.string("terraria.sync_active_chest.name", "Chest N
 ---@param payload PayloadReader
 local function build_active_chest(payload)
 	payload:int16_le(chest_id)
-	payload:int16_pair(chest_position, chest_x, chest_y)
+	payload:group(chest_position, function(payload)
+		payload:int16_le(chest_x)
+		payload:int16_le(chest_y)
+	end)
 	local len, len_range = payload.reader:uint8()
 	payload:add_field(name_length, len_range, len)
 
@@ -21,7 +24,7 @@ end
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:group(active_chest, "Active Chest", build_active_chest)
+	payload:group(active_chest, build_active_chest)
 end
 
 return {

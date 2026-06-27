@@ -20,7 +20,7 @@ end
 ---@param payload PayloadReader
 local function build(payload)
 	payload:int32_le(status_max)
-	payload:group(message, "Message", build_message)
+	payload:group(message, build_message)
 end
 
 return {

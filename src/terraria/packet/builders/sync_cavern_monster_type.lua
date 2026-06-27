@@ -21,7 +21,7 @@ end
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:group(monster_types, "Monster Types", build_monster_types)
+	payload:group(monster_types, build_monster_types)
 end
 
 local fields = {

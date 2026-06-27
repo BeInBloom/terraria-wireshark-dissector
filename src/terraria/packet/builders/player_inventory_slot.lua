@@ -41,8 +41,8 @@ end
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:group(slot, "Slot", build_slot)
-	payload:group(item, "Item", build_item)
+	payload:group(slot, build_slot)
+	payload:group(item, build_item)
 end
 
 return {

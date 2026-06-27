@@ -7,7 +7,10 @@ local direction = ProtoField.uint8("terraria.door_toggle.direction", "Direction"
 ---@param payload PayloadReader
 local function build(payload)
 	payload:uint8(action)
-	payload:int16_pair(tile_position, tile_x, tile_y)
+	payload:group(tile_position, function(payload)
+		payload:int16_le(tile_x)
+		payload:int16_le(tile_y)
+	end)
 	payload:uint8(direction)
 end
 

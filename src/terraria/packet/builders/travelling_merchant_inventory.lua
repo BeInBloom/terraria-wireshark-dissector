@@ -21,7 +21,7 @@ end
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:group(items, "Items", build_items)
+	payload:group(items, build_items)
 end
 
 local fields = {

@@ -8,6 +8,9 @@ terraria.experts = fields.experts
 
 local dissector = Dissector.new(terraria, fields)
 
+---@param tvb Tvb
+---@param pinfi PInfo
+---@param tree TreeItem
 function terraria.dissector(tvb, pinfi, tree)
 	dissector:dissect(tvb, pinfi, tree)
 end

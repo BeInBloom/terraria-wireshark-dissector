@@ -1,3 +1,5 @@
+local send_tile_square_reader = require("terraria.packet.readers.send_tile_square_reader")
+
 local fields = {
 	root = ProtoField.bytes("terraria.send_tile_square.root", "Send Tile Square"),
 	header = ProtoField.bytes("terraria.send_tile_square.header", "Header"),
@@ -17,9 +19,39 @@ local fields = {
 	tiles = ProtoField.bytes("terraria.send_tile_square.tiles", "Tiles"),
 }
 
+---@param tree TreeItem
+---@param fields table
+---@param value TerrariaSendTileSquare
+---@return nil
+local function build_header(tree, fields, value)
+	local header = tree:add(fields.header, value.header_range)
+
+	header:add_le(fields.encoded_size, value.encoded_size_range, value.encoded_size)
+	header:add_le(fields.size, value.encoded_size_range, value.size)
+
+	if value.tile_change_type_range then
+		header:add(
+			fields.tile_change_type,
+			value.tile_change_type_range,
+			value.tile_change_type
+		)
+	end
+
+	header:add_le(fields.tile_x, value.tile_x_range, value.tile_x)
+	header:add_le(fields.tile_y, value.tile_y_range, value.tile_y)
+end
+
 ---@param payload PayloadReader
+---@return nil
 local function build(payload)
-	payload:send_tile_square(fields)
+	local value, range = send_tile_square_reader.new(payload.reader):read()
+	local tree = payload.tree:add(fields.root, range)
+
+	build_header(tree, fields, value)
+
+	if value.tiles_range then
+		tree:add(fields.tiles, value.tiles_range)
+	end
 end
 
 return {

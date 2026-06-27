@@ -1,8 +1,13 @@
-local registered_fields = {}
+local fields = {}
 
+---@param factory fun(name: string, label: string, display: any): ProtoField
+---@param name string
+---@param label string
+---@param display any
+---@return ProtoField
 local function define(factory, name, label, display)
 	local field = factory("terraria.world_info." .. name, label, display)
-	registered_fields[#registered_fields + 1] = field
+	fields[#fields + 1] = field
 	return field
 end
 
@@ -127,7 +132,7 @@ local sandstorm_severity = define(ProtoField.float, "sandstorm_severity", "Sands
 
 ---@param payload PayloadReader
 local function build_time_state(payload)
-	payload:group(time_state, "Time State", function(payload)
+	payload:group(time_state, function(payload)
 		payload:int32_le(time)
 		payload:uint8(day_moon_info)
 		payload:uint8(moon_phase)
@@ -136,16 +141,25 @@ end
 
 ---@param payload PayloadReader
 local function build_geometry(payload)
-	payload:group(geometry, "Geometry", function(payload)
-		payload:int16_pair(world_size, max_tiles_x, max_tiles_y)
-		payload:int16_pair(spawn_position, spawn_x, spawn_y)
-		payload:int16_pair(world_layers, world_surface, rock_layer)
+	payload:group(geometry, function(payload)
+		payload:group(world_size, function(payload)
+			payload:int16_le(max_tiles_x)
+			payload:int16_le(max_tiles_y)
+		end)
+		payload:group(spawn_position, function(payload)
+			payload:int16_le(spawn_x)
+			payload:int16_le(spawn_y)
+		end)
+		payload:group(world_layers, function(payload)
+			payload:int16_le(world_surface)
+			payload:int16_le(rock_layer)
+		end)
 	end)
 end
 
 ---@param payload PayloadReader
 local function build_identity(payload)
-	payload:group(identity, "Identity", function(payload)
+	payload:group(identity, function(payload)
 		payload:int32_le(world_id)
 		payload:string(world_name)
 		payload:uint8(game_mode)
@@ -157,7 +171,7 @@ end
 
 ---@param payload PayloadReader
 local function build_biome_backgrounds(payload)
-	payload:group(biome_backgrounds, "Biome Backgrounds", function(payload)
+	payload:group(biome_backgrounds, function(payload)
 		payload:uint8(tree_background)
 		payload:uint8(corruption_background)
 		payload:uint8(jungle_background)
@@ -171,7 +185,7 @@ end
 
 ---@param payload PayloadReader
 local function build_background_styles(payload)
-	payload:group(background_styles, "Background Styles", function(payload)
+	payload:group(background_styles, function(payload)
 		payload:uint8(background_1)
 		payload:uint8(background_2)
 		payload:uint8(background_3)
@@ -185,7 +199,7 @@ end
 
 ---@param payload PayloadReader
 local function build_backgrounds(payload)
-	payload:group(backgrounds, "Backgrounds", function(payload)
+	payload:group(backgrounds, function(payload)
 		build_biome_backgrounds(payload)
 		build_background_styles(payload)
 		payload:single_le(wind_speed)
@@ -195,7 +209,7 @@ end
 
 ---@param payload PayloadReader
 local function build_tree_positions(payload)
-	payload:group(tree_positions, "Tree Positions", function(payload)
+	payload:group(tree_positions, function(payload)
 		payload:int32_le(tree_1)
 		payload:int32_le(tree_2)
 		payload:int32_le(tree_3)
@@ -204,7 +218,7 @@ end
 
 ---@param payload PayloadReader
 local function build_tree_styles(payload)
-	payload:group(tree_styles, "Tree Styles", function(payload)
+	payload:group(tree_styles, function(payload)
 		payload:uint8(tree_style_1)
 		payload:uint8(tree_style_2)
 		payload:uint8(tree_style_3)
@@ -214,7 +228,7 @@ end
 
 ---@param payload PayloadReader
 local function build_cave_backgrounds(payload)
-	payload:group(cave_backgrounds, "Cave Backgrounds", function(payload)
+	payload:group(cave_backgrounds, function(payload)
 		payload:int32_le(cave_back_1)
 		payload:int32_le(cave_back_2)
 		payload:int32_le(cave_back_3)
@@ -223,7 +237,7 @@ end
 
 ---@param payload PayloadReader
 local function build_cave_styles(payload)
-	payload:group(cave_styles, "Cave Styles", function(payload)
+	payload:group(cave_styles, function(payload)
 		payload:uint8(cave_style_1)
 		payload:uint8(cave_style_2)
 		payload:uint8(cave_style_3)
@@ -233,7 +247,7 @@ end
 
 ---@param payload PayloadReader
 local function build_tree_layout(payload)
-	payload:group(tree_layout, "Tree Layout", function(payload)
+	payload:group(tree_layout, function(payload)
 		build_tree_positions(payload)
 		build_tree_styles(payload)
 		build_cave_backgrounds(payload)
@@ -243,7 +257,7 @@ end
 
 ---@param payload PayloadReader
 local function build_tree_tops(payload)
-	payload:group(tree_tops, "Tree Tops", function(payload)
+	payload:group(tree_tops, function(payload)
 		payload:int32_le(forest_top_1)
 		payload:int32_le(forest_top_2)
 		payload:int32_le(forest_top_3)
@@ -262,7 +276,7 @@ end
 
 ---@param payload PayloadReader
 local function build_event_flags(payload)
-	payload:group(event_flags, "Event Flags", function(payload)
+	payload:group(event_flags, function(payload)
 		payload:uint8(event_info)
 		payload:uint8(event_info_2)
 		payload:uint8(event_info_3)
@@ -275,7 +289,7 @@ end
 
 ---@param payload PayloadReader
 local function build_events(payload)
-	payload:group(events, "Events", function(payload)
+	payload:group(events, function(payload)
 		payload:single_le(rain)
 		build_event_flags(payload)
 	end)
@@ -283,7 +297,7 @@ end
 
 ---@param payload PayloadReader
 local function build_ore_tiers(payload)
-	payload:group(ore_tiers, "Ore Tiers", function(payload)
+	payload:group(ore_tiers, function(payload)
 		payload:int16_le(copper_ore)
 		payload:int16_le(iron_ore)
 		payload:int16_le(silver_ore)
@@ -296,7 +310,7 @@ end
 
 ---@param payload PayloadReader
 local function build_progression(payload)
-	payload:group(progression, "Progression", function(payload)
+	payload:group(progression, function(payload)
 		build_ore_tiers(payload)
 		payload:sbyte(invasion_type)
 		payload:uint64_le(lobby_id)
@@ -319,5 +333,5 @@ end
 return {
 	id = 7,
 	build = build,
-	fields = registered_fields,
+	fields = fields,
 }

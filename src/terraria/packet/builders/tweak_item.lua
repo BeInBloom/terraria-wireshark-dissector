@@ -27,6 +27,8 @@ local ammo = ProtoField.int16("terraria.tweak_item.ammo", "Ammo", base.DEC)
 local use_ammo = ProtoField.int16("terraria.tweak_item.use_ammo", "Use Ammo", base.DEC)
 local not_ammo = ProtoField.bool("terraria.tweak_item.not_ammo", "Not Ammo")
 
+---@param payload PayloadReader
+---@param flags_value integer
 local function read_flagged_fields(payload, flags_value)
 	if (flags_value & 0x01) ~= 0 then payload:uint32_le(packed_color_value) end
 	if (flags_value & 0x02) ~= 0 then payload:uint16_le(damage) end
@@ -37,6 +39,7 @@ local function read_flagged_fields(payload, flags_value)
 	if (flags_value & 0x40) ~= 0 then payload:single_le(shoot_speed) end
 end
 
+---@param payload PayloadReader
 local function read_extended_fields(payload)
 	local flags2_value, flags2_range = payload.reader:uint8()
 	payload:add_field(flags2, flags2_range, flags2_value)

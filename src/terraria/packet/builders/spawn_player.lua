@@ -35,8 +35,11 @@ end
 ---@param payload PayloadReader
 local function build(payload)
 	payload:uint8(player_id)
-	payload:int16_pair(spawn_position, spawn_x, spawn_y)
-	payload:group(spawn_state, "Spawn State", build_spawn_state)
+	payload:group(spawn_position, function(payload)
+		payload:int16_le(spawn_x)
+		payload:int16_le(spawn_y)
+	end)
+	payload:group(spawn_state, build_spawn_state)
 end
 
 return {

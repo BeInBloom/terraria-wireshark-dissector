@@ -23,8 +23,14 @@ local end_y = ProtoField.int16(
 
 ---@param payload PayloadReader
 local function build(payload)
-	payload:int16_pair(start_position, start_x, start_y)
-	payload:int16_pair(end_position, end_x, end_y)
+	payload:group(start_position, function(payload)
+		payload:int16_le(start_x)
+		payload:int16_le(start_y)
+	end)
+	payload:group(end_position, function(payload)
+		payload:int16_le(end_x)
+		payload:int16_le(end_y)
+	end)
 end
 
 return {

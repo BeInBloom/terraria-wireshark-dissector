@@ -24,7 +24,7 @@ end
 ---@param payload PayloadReader
 local function build(payload)
 	payload:uint8(player_id)
-	payload:group(buffs, "Buffs", build_buffs)
+	payload:group(buffs, build_buffs)
 end
 
 local fields = {
